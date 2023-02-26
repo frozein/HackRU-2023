@@ -118,7 +118,7 @@ static void _download_button_callback(int callbackID)
 	std::wstring wClipboardString(len, 0);
 	mbstowcs(&wClipboardString[0], clipboardString, wClipboardString.size());
 
-	if(S_OK != URLDownloadToFileW(NULL, wClipboardString.c_str(), L"flashcards.pdf", 0, NULL))
+	if(S_OK != URLDownloadToFileW(NULL, wClipboardString.c_str(), L"flashcards.txt", 0, NULL))
 		std::cout << "FAILED TO DOWNLOAD FILE\n";
 	else
 		g_shouldPlay = true;

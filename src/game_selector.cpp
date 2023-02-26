@@ -13,6 +13,7 @@ static int g_selectedGame;
 static bool g_shouldExit;
 
 static Texture g_backgroundTex;
+static Texture g_iconTex;
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
@@ -24,6 +25,8 @@ void game_selector_enter(DNUIfont* font)
 	g_baseElement = new dnui::Element();
 
 	g_backgroundTex = renderer_load_texture("art/background.png");
+	g_iconTex = renderer_load_texture("art/gameIcon.png");
+
 	dnui::Box* background = new dnui::Box();
 	background->m_texture = g_backgroundTex;
 	g_baseElement->m_children.push_back(background);
@@ -47,7 +50,8 @@ void game_selector_enter(DNUIfont* font)
 	                                         dnui::Dimension(dnui::Dimension::ASPECT, 1.0f), _select_button_callback, 0, -1, {1.0f, 1.0f, 1.0f, 1.0f},
 											 20.0f, 0.0f, {0.72f, 0.55f, 0.0f, 1.0f}, 15.0f, baseTransition, hoverTransition, holdTransition);
 	dnui::Text nameText = dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::PIXELS, 20.0f, dnui::Coordinate::CENTER_MIN), 
-	                                 dnui::Dimension(dnui::Dimension::RELATIVE, 0.8f), "Game Title Here", font, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f, 0.0f, 0);
+	                                 dnui::Dimension(dnui::Dimension::RELATIVE, 0.8f), "Game Title Here", font, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f,
+									 0.05f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 0.05f);
 
 	for(int i = 0; i < 10; i++)
 	{
@@ -56,7 +60,10 @@ void game_selector_enter(DNUIfont* font)
 
 		dnui::Text* newText = new dnui::Text(nameText);
 		if(i == 0)
+		{
 			newText->m_text = "Cactus Jump";
+			newButton->m_texture = g_iconTex;
+		}
 		newButton->m_children.push_back(newText);	
 	
 		selectList->add_item(newButton, i + 1);
@@ -70,6 +77,8 @@ void game_selector_enter(DNUIfont* font)
 
 void game_selector_exit()
 {
+	renderer_free_texture(g_backgroundTex);
+	renderer_free_texture(g_iconTex);
 	delete g_baseElement;
 }
 
