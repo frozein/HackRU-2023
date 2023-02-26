@@ -158,7 +158,7 @@ void hackru_main_loop()
 				switch(g_activeGame)
 				{
 				case 1:
-					cactus_jump_enter(parse_flashcards("flashcards.txt"), g_font);
+					cactus_jump_enter(parse_flashcards("flashcards.txt"), g_window, g_font);
 					break;
 				}
 			}

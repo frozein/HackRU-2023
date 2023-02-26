@@ -5,8 +5,9 @@
 #include <vector>
 #include <tuple>
 #include <string>
+#include <GLFW/glfw3.h>
 
-void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, DNUIfont* font);
+void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, GLFWwindow* window, DNUIfont* font);
 void cactus_jump_exit();
 
 int cactus_jump_update(float dt, int windowW, int windowH);
