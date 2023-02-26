@@ -6,7 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include <GLAD/glad.h>
-#include <FreeType/ft2build.h>
+#include <freetype/freetype.h>
 #include FT_FREETYPE_H
 
 //--------------------------------------------------------------------------------------------------------------------------------//
