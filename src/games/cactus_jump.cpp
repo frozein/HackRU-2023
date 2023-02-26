@@ -7,6 +7,7 @@
 
 static void _answer_callback(int callbackID);
 static void _setup_question(bool bonus);
+static void _death_screen();
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
@@ -18,6 +19,7 @@ struct Hittable
 };
 
 static GLFWwindow* g_window;
+static DNUIfont* g_font;
 
 static dnui::Element* g_baseElement;
 static dnui::Text* g_scoreText;
@@ -49,6 +51,7 @@ static std::vector<Hittable> g_cactii;
 static std::vector<Hittable> g_questions;
 static float g_nextHittableSpawn;
 
+static bool g_died;
 static bool g_inQuestion;
 static bool g_questionAnswered;
 static int g_correctAnswer;
@@ -60,6 +63,7 @@ static bool g_shouldClose;
 void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, GLFWwindow* window, DNUIfont* font)
 {
 	g_window = window;
+	g_font = font;
 
 	g_shouldClose = false;
 	g_score = 0;
@@ -73,6 +77,12 @@ void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, G
 	g_playerVel = 0.0f;
 	g_lastSpacePress = 0.0f;
 	g_nextHittableSpawn = 0.0f;
+
+	g_died = false;
+	g_inQuestion = false;
+
+	g_cactii.clear();
+	g_questions.clear();
 
 	while(cards.size() > 0)
 	{
@@ -163,7 +173,7 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 {
 	g_baseElement->update(dt, {0.0f, 0.0f}, {(float)windowW, (float)windowH});
 
-	if(g_inQuestion)
+	if(g_inQuestion || g_died)
 		if(g_shouldClose)
 			return -1;
 		else
@@ -252,6 +262,9 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 		g_nextHittableSpawn = (float)glfwGetTime() + (float)rand() / RAND_MAX * 2.0f + 1.0f;
 	}
 
+	if(g_numLives < 1)
+		_death_screen();
+
 	if(g_shouldClose)
 		return -1;
 	else
@@ -286,6 +299,12 @@ void cactus_jump_mouse_click()
 		g_questionElement->set_transition(g_questionOutTransition, 0.0f);
 		g_inQuestion = false;
 		g_nextHittableSpawn = (float)glfwGetTime() + 1.0f;
+	}
+
+	if(g_died)
+	{
+		cactus_jump_exit();
+		cactus_jump_enter(g_cards, g_window, g_font);
 	}
 
 	g_baseElement->handle_event(dnui::Event(dnui::Event::MOUSE_RELEASE));
@@ -342,4 +361,25 @@ static void _setup_question(bool bonus)
 	std::pair<std::string, std::string> oldCard = g_cards[0];
 	g_cards.erase(g_cards.begin());
 	g_cards.push_back(oldCard);
+}
+
+static void _death_screen()
+{
+	g_died = true;
+
+	dnui::Box* infoBox = new dnui::Box(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.6f, dnui::Coordinate::CENTER_CENTER),
+	                                   dnui::Dimension(dnui::Dimension::RELATIVE, 0.5f), dnui::Dimension(dnui::Dimension::ASPECT, 0.7f), -1, {1.0f, 1.0f, 1.0f, 1.0f},
+									   25.0f, 0.0f, {0.0f, 0.0f, 0.0f, 1.0f}, 15.0f);
+	dnui::Text* gameOverText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.85f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.85f),
+	                                          "Game Over", g_font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+	dnui::Text* scoreText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.4f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.9f),
+	                                          "Final Score: " + std::to_string(g_score), g_font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+	dnui::Text* instructionText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.7f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.9f),
+	                                             "Click to Play Again, Press Esc to Continue", g_font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+
+	infoBox->m_children.push_back(gameOverText);								  
+	infoBox->m_children.push_back(scoreText);
+	infoBox->m_children.push_back(instructionText);
+
+	g_baseElement->m_children.push_back(infoBox);
 }
