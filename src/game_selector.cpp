@@ -1,6 +1,7 @@
 #include "game_selector.hpp"
 
 #include <GLFW/glfw3.h>
+#include "renderer.hpp"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
@@ -11,6 +12,8 @@ static dnui::Element* g_baseElement;
 static int g_selectedGame;
 static bool g_shouldExit;
 
+static Texture g_backgroundTex;
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 
 void game_selector_enter(DNUIfont* font)
@@ -19,6 +22,11 @@ void game_selector_enter(DNUIfont* font)
 	g_shouldExit = false;
 
 	g_baseElement = new dnui::Element();
+
+	g_backgroundTex = renderer_load_texture("art/background.png");
+	dnui::Box* background = new dnui::Box();
+	background->m_texture = g_backgroundTex;
+	g_baseElement->m_children.push_back(background);
 
 	dnui::List* selectList = new dnui::List(dnui::Coordinate(), dnui::Coordinate(), dnui::Dimension(), dnui::Dimension(), dnui::Dimension(dnui::Dimension::RELATIVE, 0.25f),
 											dnui::Dimension(dnui::Dimension::ASPECT, 1.0f), dnui::Dimension(dnui::Dimension::RELATIVE, 0.15f), dnui::Dimension(dnui::Dimension::ASPECT, 1.25f),
@@ -69,6 +77,17 @@ void game_selector_exit()
 
 int game_selector_update(float dt, int windowW, int windowH)
 {
+	if(windowW > windowH)
+	{
+		g_baseElement->m_children[0]->m_width = dnui::Dimension(dnui::Dimension::RELATIVE, 1.0f);
+		g_baseElement->m_children[0]->m_height = dnui::Dimension(dnui::Dimension::ASPECT, 1.0f);
+	}
+	else
+	{
+		g_baseElement->m_children[0]->m_height = dnui::Dimension(dnui::Dimension::RELATIVE, 1.0f);
+		g_baseElement->m_children[0]->m_width = dnui::Dimension(dnui::Dimension::ASPECT, 1.0f);
+	}
+
 	g_baseElement->update(dt, {0.0f, 0.0f}, {(float)windowW, (float)windowH});
 
 	if(g_shouldExit)

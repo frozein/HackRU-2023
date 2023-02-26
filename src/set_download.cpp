@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <cstdio>
 #include <iostream>
+#include "renderer.hpp"
 
 #undef RELATIVE
 
@@ -19,6 +20,8 @@ static dnui::Element* g_baseElement;
 static bool g_shouldPlay;
 static bool g_shouldExit;
 
+static Texture g_backgroundTex;
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 
 void set_download_enter(GLFWwindow* window, DNUIfont* font)
@@ -28,6 +31,11 @@ void set_download_enter(GLFWwindow* window, DNUIfont* font)
 	g_shouldExit = false;
 
 	g_baseElement = new dnui::Element();
+
+	g_backgroundTex = renderer_load_texture("art/background.png");
+	dnui::Box* background = new dnui::Box();
+	background->m_texture = g_backgroundTex;
+	g_baseElement->m_children.push_back(background);
 
 	dnui::Text* titleText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::PIXELS, 20.0f, dnui::Coordinate::CENTER_MAX),
 	                                       dnui::Dimension(dnui::Dimension::RELATIVE, 0.5F), "FunnCards.com", font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 
@@ -52,6 +60,7 @@ void set_download_enter(GLFWwindow* window, DNUIfont* font)
 
 void set_download_exit()
 {
+	renderer_free_texture(g_backgroundTex);
 	delete g_baseElement;
 }
 
@@ -59,6 +68,17 @@ void set_download_exit()
 
 int set_download_update(float dt, int windowW, int windowH)
 {
+	if(windowW > windowH)
+	{
+		g_baseElement->m_children[0]->m_width = dnui::Dimension(dnui::Dimension::RELATIVE, 1.0f);
+		g_baseElement->m_children[0]->m_height = dnui::Dimension(dnui::Dimension::ASPECT, 1.0f);
+	}
+	else
+	{
+		g_baseElement->m_children[0]->m_height = dnui::Dimension(dnui::Dimension::RELATIVE, 1.0f);
+		g_baseElement->m_children[0]->m_width = dnui::Dimension(dnui::Dimension::ASPECT, 1.0f);
+	}
+
 	g_baseElement->update(dt, {0.0f, 0.0f}, {(float)windowW, (float)windowH});
 
 	if(g_shouldExit)

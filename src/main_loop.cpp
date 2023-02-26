@@ -91,7 +91,7 @@ bool hackru_init(int windowW, int windowH, const char* windowName)
 	
 	//init font:
 	//---------------------------------
-	g_font = DNUI_load_font("fonts/arial.ttf", 72);
+	g_font = DNUI_load_font("fonts/Minecraft.ttf", 72);
 	set_download_enter(g_window, g_font);
 
 	return true;

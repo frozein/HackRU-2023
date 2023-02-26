@@ -30,6 +30,7 @@ static dnui::Element* g_questionElement;
 
 static std::vector<std::pair<std::string, std::string>> g_cards;
 
+static Texture g_skyTexture;
 static Texture g_playerTex;
 static Texture g_heartTex;
 static Texture g_groundTex;
@@ -105,8 +106,8 @@ void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, G
 	dnui::Box* coverBox = new dnui::Box(dnui::Coordinate(), dnui::Coordinate(), dnui::Dimension(), dnui::Dimension(), -1, {0.0f, 0.0f, 0.0f, 0.25f});
 	g_questionElement->m_children.push_back(coverBox);
 
-	dnui::Text* promptText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::PIXELS, 20.0f, dnui::Coordinate::CENTER_MAX), dnui::Dimension(dnui::Dimension::RELATIVE, 0.7f),
-	                                        "Select the Matching Card", font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+	dnui::Text* promptText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.8f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.7f),
+	                                        "Select the Matching Card", font, {1.0f, 1.0f, 1.0f, 1.0f}, 1.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
 	g_questionElement->m_children.push_back(promptText);
 
 	dnui::Box* questionBox = new dnui::Box(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.55f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.3f), dnui::Dimension(dnui::Dimension::ASPECT, 0.7f),
@@ -144,6 +145,7 @@ void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, G
 	g_questionOutTransition = dnui::Transition(250.0f, dnui::Transition::EXPONENTIAL);
 	g_questionOutTransition.set_target_alphamult(0.0f);
 
+	g_skyTexture = renderer_load_texture("art/sky.png");
 	g_playerTex = renderer_load_texture("art/player.png");
 	g_heartTex = renderer_load_texture("art/heart.png");
 	g_groundTex = renderer_load_texture("art/ground.png");
@@ -156,6 +158,7 @@ void cactus_jump_enter(std::vector<std::pair<std::string, std::string>> cards, G
 
 void cactus_jump_exit()
 {
+	renderer_free_texture(g_skyTexture);
 	renderer_free_texture(g_playerTex);
 	renderer_free_texture(g_heartTex);
 	renderer_free_texture(g_groundTex);
@@ -171,6 +174,8 @@ void cactus_jump_exit()
 
 int cactus_jump_update(float dt, int windowW, int windowH)
 {
+	((dnui::Text*)g_baseElement->m_children[0])->m_text = "SCORE: " + std::to_string(g_score);
+
 	g_baseElement->update(dt, {0.0f, 0.0f}, {(float)windowW, (float)windowH});
 
 	if(g_inQuestion || g_died)
@@ -178,6 +183,8 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 			return -1;
 		else
 			return 0;
+
+	dt *= ((float)g_score / 1000.0f) + 1.0f;
 
 	if(g_forwardGround)
 	{
@@ -206,7 +213,7 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 		g_lastSpacePress = (float)glfwGetTime();
 
 	if(g_playerPos <= 0.0f && (float)glfwGetTime() - g_lastSpacePress <= 0.005f)
-		g_playerVel = 8.0f;
+		g_playerVel = 7.5f;
 
 	for(int i = 0; i < g_cactii.size(); i++)
 	{
@@ -221,6 +228,7 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 		{
 			g_cactii.erase(g_cactii.begin() + i);
 			i--;
+			g_score += 10;
 		}
 	}
 
@@ -259,7 +267,7 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 			g_cactii.push_back(newCactus);
 		}
 
-		g_nextHittableSpawn = (float)glfwGetTime() + (float)rand() / RAND_MAX * 2.0f + 1.0f;
+		g_nextHittableSpawn = (float)glfwGetTime() + ((float)rand() / RAND_MAX * 2.0f + 1.0f) / ((float)g_score / 1000.0f + 1.0f);
 	}
 
 	if(g_numLives < 1)
@@ -273,6 +281,8 @@ int cactus_jump_update(float dt, int windowW, int windowH)
 
 void cactus_jump_render()
 {
+	renderer_draw_texture(g_skyTexture, 960, 540, 1920, 1080, 0.0f);
+
 	renderer_draw_texture(g_playerTex, 256, 520 - (int)g_playerPos, 128, 128, 0.0f);
 
 	for(int i = 0; i < g_cactii.size(); i++)
@@ -329,6 +339,8 @@ static void _answer_callback(int callbackID)
 		((dnui::Box*)g_questionElement->m_children[3 + callbackID])->m_outlineColor = {1.0f, 0.0f, 0.0f, 1.0f};
 		g_numLives--;
 	}
+	else
+		g_score += 100;
 
 	((dnui::Text*)g_questionElement->m_children[1])->m_text = "Click Anywhere to Continue";
 	g_questionAnswered = true;
@@ -375,7 +387,7 @@ static void _death_screen()
 	dnui::Text* scoreText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.4f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.9f),
 	                                          "Final Score: " + std::to_string(g_score), g_font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
 	dnui::Text* instructionText = new dnui::Text(dnui::Coordinate(), dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.7f, dnui::Coordinate::CENTER_CENTER), dnui::Dimension(dnui::Dimension::RELATIVE, 0.9f),
-	                                             "Click to Play Again, Press Esc to Continue", g_font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+	                                             "Click to Play Again, Press Esc to Exit", g_font, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
 
 	infoBox->m_children.push_back(gameOverText);								  
 	infoBox->m_children.push_back(scoreText);
