@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head> <link rel="stylesheet" href=style.css>
+    <title>Funncards.com | Educational games for every student K-6.</title>
+  </head>
+  <body>
+    <h1>Funncards.com</h1>
+    <h2>Studying finally made fun</h2>
+    <p>The only flash card game made to make students excited about learning. <br> 
+    Use our growing service to help your child build important study habits today!</p>
+    <ol>
+      <li>Download & Run the game</li>
+      <li>Create a Flashcard set to study from</li>
+      <li>Press the 'Get Code' Button, paste it into the game,<br>
+      and make your Flash Cards become Funn Cards!</li>
+    </ol>    
+    <main>
+      <button class="download-button">Download Now</button>
+    </main>
+    <h3>Create a Flashcard Set</h3>
+    <form method="post" action="/create_flashcards">
+      <label for="author_name">Author Name:</label>
+      <input type="text" name="author_name" required>
+      <br>
+      <label for="subject_name">Subject Name:</label>
+      <input type="text" name="subject_name" required>
+      <br>
+      <fieldset>
+        <legend>Flashcards:</legend>
+        <div id="flashcards">
+          <div class="flashcard">
+            <label for="term_1">Term:</label>
+            <input type="text" name="term_1" required>
+            <label for="definition_1">Definition:</label>
+            <input type="text" name="definition_1" required>
+          </div>
+        </div>
+        <button type="button" onclick="addFlashcard()">Add Flashcard</button>
+      </fieldset>
+      <button type="submit">Create Flashcard Set</button>
+      <button class="get-code-button">Get Code</button>
+    </form>
+    <script>
+      let flashcardCount = 1;
+
+      function addFlashcard() {
+        flashcardCount++;
+
+        let newFlashcard = document.createElement('div');
+        newFlashcard.className = 'flashcard';
+
+        let termLabel = document.createElement('label');
+        termLabel.for = `term_${flashcardCount}`;
+        termLabel.textContent = 'Term:';
+
+        let termInput = document.createElement('input');
+        termInput.type = 'text';
+        termInput.name = `term_${flashcardCount}`;
+        termInput.required = true;
+
+        let definitionLabel = document.createElement('label');
+        definitionLabel.for = `definition_${flashcardCount}`;
+        definitionLabel.textContent = 'Definition:';
+
+        let definitionInput = document.createElement('input');
+        definitionInput.type = 'text';
+        definitionInput.name = `definition_${flashcardCount}`;
+        definitionInput.required = true;
+
+        newFlashcard.appendChild(termLabel);
+        newFlashcard.appendChild(termInput);
+        newFlashcard.appendChild(definitionLabel);
+        newFlashcard.appendChild(definitionInput);
+
+        let flashcards = document.getElementById('flashcards');
+        flashcards.appendChild(newFlashcard);
+      }
+    </script>
+  </body>
+</html>
